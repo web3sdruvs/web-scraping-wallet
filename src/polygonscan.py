@@ -6,62 +6,62 @@ from datetime import datetime, timedelta
 #setup
 date_current = datetime.now()
 address = '0x0b83f617ad1b093e071248930366ca447aa81971'
-url = f'https://polygonscan.com/txs?a={address}&p='
-headers = {'User-Agent': 'Chrome/50.0.2661.102'}
-result = requests.get(url, headers=headers)
 df = None
+count = 1
 
-def convert_time_to_date(date):
-  # Function to convert the string to a date
-  parts = date.split()
-
-  if ('day' in date or 'days' in date) and ('hr' in date or 'hrs' in date):
-    day = int(parts[0])
-    hour = int(parts[2])
-    delta_time = timedelta(days=day, hours=hour)
-  elif ('day' in date or 'days' in date) and ('min' in date or 'mins' in date):
-    day = int(parts[0])
-    min = int(parts[2])
-    delta_time = timedelta(days=day, minutes=min)
-  elif ('hr' in date or 'hrs' in date) and ('min' in date or 'mins' in date):
-    hour = int(parts[0])
-    min = int(parts[2])
-    delta_time = timedelta(hours=hour, minutes=min)
-  else:
-    min = int(parts[0])
-    delta_time = timedelta(minutes=min)
-
-  new_date = date_current - delta_time
-    
-  return new_date
-
-if result.status_code == 200:
-  content = result.content
-  soup = BeautifulSoup(content,'html.parser')
-  pages = soup.find(class_='page-link text-nowrap')
-  pages = pages.find_all('strong')
-  try:
-    pages = int(pages[1].get_text())
-  except:
-    pages = 1 
-
-  count = 1
-
-  while count <= pages:
-
+def get_content(address,count):
     headers = {'User-Agent': 'Chrome/50.0.2661.102'}
-    result = requests.get(f'{url}{count}', headers=headers) 
+    url = f'https://polygonscan.com/txs?a={address}&p={count}'
+    result = requests.get(url, headers=headers) 
+    status = result.status_code
     content = result.content
     soup = BeautifulSoup(content,'html.parser')
-    table = str(soup.find(class_='table-responsive mb-2 mb-md-0'))
-    table_temp = pd.read_html(table)[0]
-    df = pd.concat([df, table_temp], ignore_index=True)
-    count += 1
 
-  del df['Unnamed: 0']
-  df.rename(columns={'Unnamed: 4': 'Age','Unnamed: 6': 'Action','Unnamed: 9': 'Fee'}, inplace=True)
-  df['Date'] = df['Age'].apply(convert_time_to_date)
+    return soup, status
+
+def convert_time_to_date(date):
+    # Function to convert the string to a date
+    parts = date.split()
+
+    if ('day' in date or 'days' in date) and ('hr' in date or 'hrs' in date):
+        day = int(parts[0])
+        hour = int(parts[2])
+        delta_time = timedelta(days=day, hours=hour)
+    elif ('day' in date or 'days' in date) and ('min' in date or 'mins' in date):
+        day = int(parts[0])
+        min = int(parts[2])
+        delta_time = timedelta(days=day, minutes=min)
+    elif ('hr' in date or 'hrs' in date) and ('min' in date or 'mins' in date):
+        hour = int(parts[0])
+        min = int(parts[2])
+        delta_time = timedelta(hours=hour, minutes=min)
+    else:
+        min = int(parts[0])
+        delta_time = timedelta(minutes=min)
+
+    new_date = date_current - delta_time
+
+    return new_date
+
+soup, status = get_content(address,count)
+
+if status == 200:
+    pages = soup.find(class_='page-link text-nowrap')
+    pages = pages.find_all('strong')
+    try:
+        pages = int(pages[1].get_text())
+    except:
+        pages = 1 
+
+    while count <= pages:
+        soup, status = get_content(address,count)
+        table = str(soup.find(class_='table-responsive mb-2 mb-md-0'))
+        table_temp = pd.read_html(table)[0]
+        df = pd.concat([df, table_temp], ignore_index=True)
+        count += 1
+
+    del df['Unnamed: 0']
+    df.rename(columns={'Unnamed: 4': 'Age','Unnamed: 6': 'Action','Unnamed: 9': 'Fee'}, inplace=True)
+    df['Date'] = df['Age'].apply(convert_time_to_date)
 
 df.to_csv(f'data/polygonscan-{address}.csv', index=False)
-
-
