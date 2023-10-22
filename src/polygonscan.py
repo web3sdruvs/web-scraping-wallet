@@ -33,16 +33,17 @@ def convert_time_to_date(date):
     # Function to convert the string to a date
     parts = date.split()
     date_current = datetime.now()
-
-    if ('day' in date or 'days' in date) and ('hr' in date or 'hrs' in date):
+    date = date.lower().replace('s', '')
+    
+    if 'day' in date and 'hr' in date:
         day = int(parts[0])
         hour = int(parts[2])
         delta_time = timedelta(days=day, hours=hour)
-    elif ('day' in date or 'days' in date) and ('min' in date or 'mins' in date):
+    elif 'day' in date and 'min' in date:
         day = int(parts[0])
         min = int(parts[2])
         delta_time = timedelta(days=day, minutes=min)
-    elif ('hr' in date or 'hrs' in date) and ('min' in date or 'mins' in date):
+    elif 'hr' in date and 'min' in date:
         hour = int(parts[0])
         min = int(parts[2])
         delta_time = timedelta(hours=hour, minutes=min)
