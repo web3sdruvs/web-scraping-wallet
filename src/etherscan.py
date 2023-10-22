@@ -8,7 +8,6 @@ class Config:
     def __init__(self, config_file):
         self.config = configparser.ConfigParser()
         self.config.read(config_file)
-        print(self.config.read(config_file))
 
     def get_address(self):
         return self.config['ADDRESS']['ERC20']
@@ -74,4 +73,4 @@ if status == 200:
     df.rename(columns={'Unnamed: 4': 'Age','Unnamed: 6': 'Action','Unnamed: 9': 'Fee'}, inplace=True)
     df['Date'] = df['Age'].apply(convert_time_to_date)
 
-df.to_csv(f'data/etherscan-{address}.csv', index=False)
+df.to_csv(f'../data/etherscan-{address}.csv', index=False)
