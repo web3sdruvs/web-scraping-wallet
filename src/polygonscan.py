@@ -1,11 +1,21 @@
-import requests
-import pandas as pd
-from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
+from bs4 import BeautifulSoup
+import pandas as pd
+import requests
+import configparser
 
-#setup
-date_current = datetime.now()
-address = '0x0b83f617ad1b093e071248930366ca447aa81971'
+class Config:
+    def __init__(self, config_file):
+        self.config = configparser.ConfigParser()
+        self.config.read(config_file)
+        print(self.config.read(config_file))
+
+    def get_address(self):
+        return self.config['ADDRESS']['ERC20']
+        
+config_file = 'config.ini'
+config = Config(config_file)
+address = config.get_address()
 df = None
 count = 1
 
@@ -22,6 +32,7 @@ def get_content(address,count):
 def convert_time_to_date(date):
     # Function to convert the string to a date
     parts = date.split()
+    date_current = datetime.now()
 
     if ('day' in date or 'days' in date) and ('hr' in date or 'hrs' in date):
         day = int(parts[0])
