@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
+from io import StringIO
 import pandas as pd
 import requests
 import configparser
@@ -67,6 +68,7 @@ if status == 200:
     while count <= pages:
         soup, status = get_content(address,count)
         table = str(soup.find(class_='table-responsive mb-2 mb-md-0'))
+        table = StringIO(table)
         table_temp = pd.read_html(table)[0]
         df = pd.concat([df, table_temp], ignore_index=True)
         count += 1
