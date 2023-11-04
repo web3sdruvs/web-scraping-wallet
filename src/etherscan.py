@@ -54,6 +54,7 @@ def convert_time_to_date(date):
     new_date = date_current - delta_time
 
     return new_date
+
 soup, status = get_content(address,count)
 
 if status == 200:
